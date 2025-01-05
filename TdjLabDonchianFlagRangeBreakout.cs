@@ -77,7 +77,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
                 PoleMaxBars = 4;
                 AverageBodySizeRatio = 1.5;
                 ExtensionSizeMinATRMultiples = 1;
-                AverageBarExtensionATMMultiples = 0.3;
+                AverageBarExtensionATRMultiples = 0.3;
                 MinAverageCloseRatio = 0.5;
 
                 ComparisonDCPeriod = 100;
@@ -100,8 +100,8 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
             else if (State == State.DataLoaded)
             {
-                flagPoleDetector = TdjDonchianFlagPoleDetector(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATMMultiples, MinAverageCloseRatio);
-                flagPoleBias = TdjDonchianFlagPoleBias(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATMMultiples, MinAverageCloseRatio, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage, MaxBiasValidity, InvertBiasDirection);
+                flagPoleDetector = TdjDonchianFlagPoleDetector(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio);
+                flagPoleBias = TdjDonchianFlagPoleBias(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage, MaxBiasValidity, InvertBiasDirection);
             }
         }
 
@@ -306,7 +306,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
         [Display(Name = "Average Bar Extension ATR Multiples", Description = "The average bar extension of the flag measured in ATR multiples", Order = 8, GroupName = "001 Detector Parameters")]
-        public double AverageBarExtensionATMMultiples
+        public double AverageBarExtensionATRMultiples
         { get; set; }
 
         [NinjaScriptProperty]
