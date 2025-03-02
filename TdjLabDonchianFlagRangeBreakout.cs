@@ -34,11 +34,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 {
     public class TdjLabDonchianFlagRangeBreakout : Strategy
     {
-        private TdjDonchianFlagPoleBias flagPoleBias;
-        private TdjDonchianFlagPoleDetector flagPoleDetector;
-
-        private FlagRange flagRangeUp;
-        private FlagRange flagRangeDown;
+        private TdjDonchianFlagPoleSetup flagPoleSetup;
 
         private string entryLongSignalName = @"EntryLong";
         private string entryShortSignalName = @"EntryShort";
@@ -50,7 +46,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         {
             if (State == State.SetDefaults)
             {
-                Description = @"An example strategy using the Donchian Flag Pole Detector that you can use as a starting point";
+                Description = @"An example strategy using the Donchian Flag Pole Setup that you can use as a starting point";
                 Name = "Donchian Flag Range Breakout";
                 Calculate = Calculate.OnBarClose;
                 EntriesPerDirection = 1;
@@ -70,6 +66,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
                 // Disable this property for performance gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
+
                 DonchianChannelPeriod = 5;
                 LoadPeriod = 2;
                 BodyAveragePeriod = 3;
@@ -79,17 +76,14 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
                 ExtensionSizeMinATRMultiples = 1;
                 AverageBarExtensionATRMultiples = 0.3;
                 MinAverageCloseRatio = 0.5;
-
+                SetupType = TdjDonchianFlagPoleSetupProperties.SetupType.FormationBreakout;
+                MinPullbackBars = 1;
+                MaxPullbackBars = 5;
                 ComparisonDCPeriod = 100;
                 PoleDCRangeMinPercentage = 10;
                 PoleDCRangeMaxPercentage = 50;
                 MinPullbackPercentage = 30;
                 MaxPullbackPercentage = 100;
-                MaxBiasValidity = 5;
-                InvertBiasDirection = false;
-
-                MinPullbackBars = 1;
-                MaxPullbackBars = 5;
 
                 StartTime = DateTime.Parse("00:00", System.Globalization.CultureInfo.InvariantCulture);
                 EndTime = DateTime.Parse("23:59", System.Globalization.CultureInfo.InvariantCulture);
@@ -100,17 +94,13 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
             else if (State == State.DataLoaded)
             {
-                flagPoleDetector = TdjDonchianFlagPoleDetector(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio);
-                flagPoleBias = TdjDonchianFlagPoleBias(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage, MaxBiasValidity, InvertBiasDirection);
+                flagPoleSetup = TdjDonchianFlagPoleSetup(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, SetupType, MinPullbackBars, MaxPullbackBars, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage);
             }
         }
 
         protected override void OnBarUpdate()
         {
             if (CurrentBar < 2) return;
-
-            manageFlagRange();
-            manageFlagRangeCreation();
 
             if (Position.MarketPosition == MarketPosition.Flat
                 && intoTimeInterval(Time[0]))
@@ -119,57 +109,6 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
         }
 
-        private void manageFlagRange()
-        {
-            if (flagRangeUp != null
-                && High[0] <= flagRangeUp.High
-                && Low[0] >= flagRangeUp.Low
-                && flagRangeUp.PullbackBars <= MaxPullbackBars)
-            {
-                flagRangeUp.PullbackBars++;
-            }
-            else
-            { 
-                flagRangeUp = null;
-            }
-
-            if (flagRangeDown != null
-                && High[0] <= flagRangeDown.High
-                && Low[0] >= flagRangeDown.Low
-                && flagRangeDown.PullbackBars <= MaxPullbackBars)
-            {
-                flagRangeDown.PullbackBars++;
-            }
-            else
-            {
-                flagRangeDown = null;
-            }
-        }
-
-        private void manageFlagRangeCreation()
-        {
-            if (flagPoleDetector.SignalUp[0])
-            {
-                flagRangeUp = new FlagRange
-                {
-                    High = flagPoleDetector.SignalUpUpperLevel[0],
-                    Low = flagPoleDetector.SignalUpLowerLevel[0],
-                    PullbackBars = High[0] <= High[1] ? 1 : 0
-                };
-            }
-
-            if (flagPoleDetector.SignalDown[0])
-            {
-                flagRangeDown = new FlagRange
-                {
-                    High = flagPoleDetector.SignalDownUpperLevel[0],
-                    Low = flagPoleDetector.SignalDownLowerLevel[0],
-                    PullbackBars = Low[0] >= Low[1] ? 1 : 0
-                };
-            }
-
-        }        
-
         private bool intoTimeInterval(DateTime currentTime)
         {
             return currentTime.TimeOfDay >= StartTime.TimeOfDay && currentTime.TimeOfDay < EndTime.TimeOfDay;
@@ -177,22 +116,16 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 
         private void manageEntry()
         {
-            if (flagRangeUp != null 
-                && flagRangeUp.PullbackBars >= MinPullbackBars
-                && flagRangeUp.PullbackBars <= MaxPullbackBars
-                && flagPoleBias.BiasUp[0] > 0)
+            if (flagPoleSetup.SignalUp[0])
             {
                 setLongTargetAndStop();
-                EnterLongStopMarket(Convert.ToInt32(DefaultQuantity), (flagRangeUp.High + 1 * TickSize), entryLongSignalName);
+                EnterLongStopMarket(Convert.ToInt32(DefaultQuantity), (flagPoleSetup.SignalUpUpperLevel[0] + 1 * TickSize), entryLongSignalName);
             }
 
-            if (flagRangeDown != null
-                && flagRangeDown.PullbackBars >= MinPullbackBars
-                && flagRangeDown.PullbackBars <= MaxPullbackBars
-                && flagPoleBias.BiasDown[0] > 0)
+            if (flagPoleSetup.SignalDown[0])
             {
                 setShortTargetAndStop();
-                EnterShortStopMarket(Convert.ToInt32(DefaultQuantity), (flagRangeDown.Low - 1 * TickSize), entryShortSignalName);
+                EnterShortStopMarket(Convert.ToInt32(DefaultQuantity), (flagPoleSetup.SignalDownLowerLevel[0] - 1 * TickSize), entryShortSignalName);
             }
         }
 
@@ -229,10 +162,10 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 
         private void setLongTargetAndStop()
         {
-            double stopLossPrice = Low[0] - 1 * TickSize;
-            double risk = (flagRangeUp.High + 1 * TickSize) - (Low[0] - 1 * TickSize);
+            double stopLossPrice = flagPoleSetup.SignalUpLowerLevel[0] - 1 * TickSize;
+            double risk = (flagPoleSetup.SignalUpUpperLevel[0] + 1 * TickSize) - (flagPoleSetup.SignalUpLowerLevel[0] - 1 * TickSize);
             double reward = risk * RewardRisk;
-            double targetPrice = Instrument.MasterInstrument.RoundToTickSize(flagRangeUp.High + 1 * TickSize + reward);
+            double targetPrice = Instrument.MasterInstrument.RoundToTickSize(flagPoleSetup.SignalUpUpperLevel[0] + 1 * TickSize + reward);
 
             SetStopLoss(entryLongSignalName, CalculationMode.Price, stopLossPrice, false);
             SetProfitTarget(entryLongSignalName, CalculationMode.Price, targetPrice, false);
@@ -240,24 +173,13 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 
         private void setShortTargetAndStop()
         {
-            double stopLossPrice = High[0] + 1 * TickSize;
-            double risk = (High[0] + 1 * TickSize) - (flagRangeDown.Low - 1 * TickSize);
+            double stopLossPrice = flagPoleSetup.SignalDownUpperLevel[0] + 1 * TickSize;
+            double risk = (flagPoleSetup.SignalDownUpperLevel[0] + 1 * TickSize) - (flagPoleSetup.SignalDownLowerLevel[0] - 1 * TickSize);
             double reward = risk * RewardRisk;
-            double targetPrice = Instrument.MasterInstrument.RoundToTickSize(flagRangeDown.Low - 1 * TickSize - reward);
+            double targetPrice = Instrument.MasterInstrument.RoundToTickSize(flagPoleSetup.SignalDownLowerLevel[0] - 1 * TickSize - reward);
             SetStopLoss(entryShortSignalName, CalculationMode.Price, stopLossPrice, false);
             SetProfitTarget(entryShortSignalName, CalculationMode.Price, targetPrice, false);
         }
-
-        #region Helper classes
-        private class FlagRange 
-        {
-            public double High { get; set; }
-            public double Low { get; set; }
-            public double PullbackBars { get; set; }
-
-        }
-        #endregion
-
 
         #region Properties
         [NinjaScriptProperty]
@@ -290,7 +212,6 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         public int PoleMaxBars
         { get; set; }
 
-
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
         [Display(Name = "Average Body Size Ratio", Description = "Maximum number of bars allowed in the flag pole.", Order = 6, GroupName = "001 Detector Parameters")]
@@ -316,72 +237,68 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         { get; set; }
 
         [NinjaScriptProperty]
+        [Range(0, double.MaxValue)]
+        [Display(Name = "Setup Type", Description = "The type of setup", Order = 1, GroupName = "002 Parameters")]
+        public TdjDonchianFlagPoleSetupProperties.SetupType SetupType
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Min Pullback Bars", Order = 2, GroupName = "002 Parameters")]
+        public int MinPullbackBars
+        { get; set; }
+
+        [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Comparison DC Period", Order = 1, GroupName = "002 Parameters")]
+        [Display(Name = "Max Pullback Bars", Order = 3, GroupName = "002 Parameters")]
+        public int MaxPullbackBars
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Comparison DC Period", Order = 4, GroupName = "002 Parameters")]
         public int ComparisonDCPeriod
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Pole DC Range Min Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 2, GroupName = "002 Parameters")]
+        [Display(Name = "Pole DC Range Min Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 5, GroupName = "002 Parameters")]
         public int PoleDCRangeMinPercentage
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Pole DC Range Max Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 3, GroupName = "002 Parameters")]
+        [Display(Name = "Pole DC Range Max Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 6, GroupName = "002 Parameters")]
         public int PoleDCRangeMaxPercentage
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Min Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 4, GroupName = "002 Parameters")]
+        [Display(Name = "Min Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 7, GroupName = "002 Parameters")]
         public int MinPullbackPercentage
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Max Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 5, GroupName = "002 Parameters")]
+        [Display(Name = "Max Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 8, GroupName = "002 Parameters")]
         public int MaxPullbackPercentage
         { get; set; }
 
         [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Max Bias Validity", Order = 6, GroupName = "002 Parameters")]
-        public int MaxBiasValidity
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Display(Name = "Invert Bias Direction", Order = 7, GroupName = "002 Parameters")]
-        public bool InvertBiasDirection
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(0, int.MaxValue)]
-        [Display(Name = "Min PullbackBars", Description = "The minimum number of pullback bars. In this context we consider pullback bar a bar that does not make a new high or low", Order = 1, GroupName = "003 Strategy Parameters")]
-        public int MinPullbackBars
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(0, int.MaxValue)]
-        [Display(Name = "Max Pull backBars", Order = 2, GroupName = "003 Strategy Parameters")]
-        public int MaxPullbackBars
-        { get; set; }
-        [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start Time", Order = 3, GroupName = "003 Strategy Parameters")]
+        [Display(Name = "Start Time", Order = 1, GroupName = "003 Strategy Parameters")]
         public DateTime StartTime
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "End Time", Order = 4, GroupName = "003 Strategy Parameters")]
+        [Display(Name = "End Time", Order = 2, GroupName = "003 Strategy Parameters")]
         public DateTime EndTime
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
-        [Display(Name = "Reward/Risk", Order = 5, GroupName = "003 Strategy Parameters")]
+        [Display(Name = "Reward/Risk", Order = 3, GroupName = "003 Strategy Parameters")]
         public double RewardRisk
         { get; set; }
         #endregion
