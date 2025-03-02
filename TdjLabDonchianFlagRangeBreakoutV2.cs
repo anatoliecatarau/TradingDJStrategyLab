@@ -188,16 +188,6 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
         }
 
-        #region Helper classes
-        private class FlagRange
-        {
-            public double High { get; set; }
-            public double Low { get; set; }
-            public double PullbackBars { get; set; }
-
-        }
-        #endregion
-
         #region Properties
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
