@@ -1,4 +1,3 @@
-
 # TradingDJ Strategy Lab
 
 This repository contains **example strategies** for NinjaTrader 8 that demonstrate the use of [TradingDJ indicators](https://tradingdj.com/ninjatrader-indicators). These strategies are provided to help traders understand how to integrate and use the indicators effectively in their own trading systems.
@@ -6,6 +5,16 @@ This repository contains **example strategies** for NinjaTrader 8 that demonstra
 ## About TradingDJ Indicators
 
 TradingDJ offers a variety of professional-grade, customizable indicators for NinjaTrader 8. These tools are designed to support traders in making informed decisions, whether they are swing trading, day trading, or employing custom strategies. Learn more at [TradingDJ.com](https://tradingdj.com/ninjatrader-indicators).
+
+## Prerequisites
+
+The strategies in this repository rely on TradingDJ indicators. To use them, you must first install the **TradingDJ Indicators Bundle**:
+
+- Download the TradingDJ Indicators Bundle from:  
+  **[Google Drive Link](https://drive.google.com/drive/u/2/folders/1MABT9-IpHH5-FTQ2ph0bG5u3lxNw_EXw)**  
+  (Includes a 7-day free trial)
+  
+- Import it in NinjaTrader (Tools -> Import -> NinjaScript Ad-On...).
 
 ## Disclaimer
 
@@ -35,4 +44,4 @@ Feel free to modify these strategies or use them as inspiration for your own tra
 
 ## Contributions
 
-Contributions and improvements are welcome! If you have suggestions or want to share how you’re using TradingDJ indicators in your own strategies, feel free to create a pull request or open an issue.
+Contributions and improvements are welcome! If you have suggestions or want to share how you're using TradingDJ indicators in your own strategies, feel free to create a pull request or open an issue.
