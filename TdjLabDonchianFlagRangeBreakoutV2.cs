@@ -69,6 +69,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 
                 DonchianChannelPeriod = 5;
                 LoadPeriod = 2;
+                LoadExtremeBreak = false;
                 BodyAveragePeriod = 3;
                 PoleMinBars = 1;
                 PoleMaxBars = 4;
@@ -84,6 +85,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
                 PoleDCRangeMaxPercentage = 50;
                 MinPullbackPercentage = 30;
                 MaxPullbackPercentage = 100;
+                ImpulseExtremeBreak = false;
 
                 StartTime = DateTime.Parse("00:00", System.Globalization.CultureInfo.InvariantCulture);
                 EndTime = DateTime.Parse("23:59", System.Globalization.CultureInfo.InvariantCulture);
@@ -112,7 +114,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
             else if (State == State.DataLoaded)
             {
-                flagPoleSetup = TdjDonchianFlagPoleSetup(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, SetupType, MinPullbackBars, MaxPullbackBars, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage);
+                flagPoleSetup = TdjDonchianFlagPoleSetup(DonchianChannelPeriod, LoadPeriod, LoadExtremeBreak, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, SetupType, MinPullbackBars, MaxPullbackBars, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage, ImpulseExtremeBreak);
             }
         }
 
@@ -199,6 +201,11 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         [Range(1, int.MaxValue)]
         [Display(Name = "Load Period", Description = "Number of bars considered for the load phase.", Order = 2, GroupName = "001 Detector Parameters")]
         public int LoadPeriod
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Load Extreme Break", Description = "When enabled, the bar that made a new high or low during the loading phase, must be broken", Order = 3, GroupName = "001 Detector Parameters")]
+        public bool LoadExtremeBreak
         { get; set; }
 
         [NinjaScriptProperty]
@@ -289,6 +296,11 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         [Range(1, int.MaxValue)]
         [Display(Name = "Max Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 8, GroupName = "002 Parameters")]
         public int MaxPullbackPercentage
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Impulse Extreme Break", Description = "When enabled, the bar that made a new high or low, must be broken", Order = 9, GroupName = "002 Parameters")]
+        public bool ImpulseExtremeBreak
         { get; set; }
 
         [NinjaScriptProperty]

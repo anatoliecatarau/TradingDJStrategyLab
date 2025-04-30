@@ -69,6 +69,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
 
                 DonchianChannelPeriod = 5;
                 LoadPeriod = 2;
+                LoadExtremeBreak = false;
                 BodyAveragePeriod = 3;
                 PoleMinBars = 1;
                 PoleMaxBars = 4;
@@ -84,6 +85,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
                 PoleDCRangeMaxPercentage = 50;
                 MinPullbackPercentage = 30;
                 MaxPullbackPercentage = 100;
+                ImpulseExtremeBreak = false;
 
                 StartTime = DateTime.Parse("00:00", System.Globalization.CultureInfo.InvariantCulture);
                 EndTime = DateTime.Parse("23:59", System.Globalization.CultureInfo.InvariantCulture);
@@ -94,7 +96,7 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
             }
             else if (State == State.DataLoaded)
             {
-                flagPoleSetup = TdjDonchianFlagPoleSetup(DonchianChannelPeriod, LoadPeriod, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, SetupType, MinPullbackBars, MaxPullbackBars, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage);
+                flagPoleSetup = TdjDonchianFlagPoleSetup(DonchianChannelPeriod, LoadPeriod, LoadExtremeBreak, BodyAveragePeriod, PoleMinBars, PoleMaxBars, AverageBodySizeRatio, ExtensionSizeMinATRMultiples, AverageBarExtensionATRMultiples, MinAverageCloseRatio, SetupType, MinPullbackBars, MaxPullbackBars, ComparisonDCPeriod, PoleDCRangeMinPercentage, PoleDCRangeMaxPercentage, MinPullbackPercentage, MaxPullbackPercentage, ImpulseExtremeBreak);
             }
         }
 
@@ -195,44 +197,49 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         { get; set; }
 
         [NinjaScriptProperty]
+        [Display(Name = "Load Extreme Break", Description = "When enabled, the bar that made a new high or low during the loading phase, must be broken", Order = 3, GroupName = "001 Detector Parameters")]
+        public bool LoadExtremeBreak
+        { get; set; }
+
+        [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Body Average Period", Description = "Number of bars considered the average body size calculation.", Order = 3, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Body Average Period", Description = "Number of bars considered the average body size calculation.", Order = 4, GroupName = "001 Detector Parameters")]
         public int BodyAveragePeriod
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Pole Min Bars", Description = "Minimum number of bars required in the flag pole.", Order = 4, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Pole Min Bars", Description = "Minimum number of bars required in the flag pole.", Order = 5, GroupName = "001 Detector Parameters")]
         public int PoleMinBars
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Pole Max Bars", Description = "Maximum number of bars allowed in the flag pole.", Order = 5, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Pole Max Bars", Description = "Maximum number of bars allowed in the flag pole.", Order = 6, GroupName = "001 Detector Parameters")]
         public int PoleMaxBars
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
-        [Display(Name = "Average Body Size Ratio", Description = "Maximum number of bars allowed in the flag pole.", Order = 6, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Average Body Size Ratio", Description = "Maximum number of bars allowed in the flag pole.", Order = 7, GroupName = "001 Detector Parameters")]
         public double AverageBodySizeRatio
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
-        [Display(Name = "Extension Size Min ATR Multiples", Description = "The minimum size of the extension in the direction of the flag pole in ATR multiples", Order = 7, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Extension Size Min ATR Multiples", Description = "The minimum size of the extension in the direction of the flag pole in ATR multiples", Order = 8, GroupName = "001 Detector Parameters")]
         public double ExtensionSizeMinATRMultiples
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
-        [Display(Name = "Average Bar Extension ATR Multiples", Description = "The average bar extension of the flag measured in ATR multiples", Order = 8, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Average Bar Extension ATR Multiples", Description = "The average bar extension of the flag measured in ATR multiples", Order = 9, GroupName = "001 Detector Parameters")]
         public double AverageBarExtensionATRMultiples
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(0, double.MaxValue)]
-        [Display(Name = "Min Average Close Ratio", Description = "The minimum average close ratio of the bars forming the pole in the direction of the flag pole", Order = 9, GroupName = "001 Detector Parameters")]
+        [Display(Name = "Min Average Close Ratio", Description = "The minimum average close ratio of the bars forming the pole in the direction of the flag pole", Order = 10, GroupName = "001 Detector Parameters")]
         public double MinAverageCloseRatio
         { get; set; }
 
@@ -282,6 +289,11 @@ namespace NinjaTrader.NinjaScript.Strategies.TradingDJStrategyLab
         [Range(1, int.MaxValue)]
         [Display(Name = "Max Pullback Percentage", Description = "The maximum percentage of the flag pole relative to the range of Donchian Channel.", Order = 8, GroupName = "002 Parameters")]
         public int MaxPullbackPercentage
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Impulse Extreme Break", Description = "When enabled, the bar that made a new high or low, must be broken", Order = 9, GroupName = "002 Parameters")]
+        public bool ImpulseExtremeBreak
         { get; set; }
 
         [NinjaScriptProperty]
